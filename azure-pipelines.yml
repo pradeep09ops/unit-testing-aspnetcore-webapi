@@ -6,9 +6,8 @@ trigger:
   - master
 
 variables:
-- group: 'KeyVaultSecretsVariableGroup'
   BuildConfiguration: 'Release'
-  ServiceConnection: 'SC-09'
+- group: 'KeyVaultSecretsVariableGroup'
   
 stages:
 - stage: 'Build'
@@ -22,8 +21,8 @@ stages:
         rootDirectory: 'netcore-unit-testing/web-api/web-api'
         targetFiles: appsettings.json
         tokenPattern: custom
-        tokenSuffix: #{
-        tokenPrefix: }#
+        tokenPrefix: #{
+        tokenSuffix: }#
     
     - task: DotNetCoreCLI@2
       displayName: Restore
