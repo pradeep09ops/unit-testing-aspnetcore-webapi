@@ -1,0 +1,56 @@
+
+pool:
+  name: Default
+
+trigger:
+  - master
+
+variables:
+- group: 'KeyVaultSecretsVariableGroup'
+  BuildConfiguration: 'Release'
+  ServiceConnection: 'SC-09'
+  
+stages:
+- stage: 'Build'
+  jobs:
+  - job: 'Build'
+    steps:
+    
+    - task: qetza.replacetokens.replacetokens-task.replacetokens@4
+      displayName: 'Replace tokens in **/appsettings.json'
+      inputs:
+        rootDirectory: 'netcore-unit-testing/web-api/web-api'
+        targetFiles: appsettings.json
+        tokenPattern: custom
+        tokenSuffix: #{
+        tokenPrefix: }#
+    
+    - task: DotNetCoreCLI@2
+      displayName: Restore
+      inputs:
+        command: restore
+
+    - task: DotNetCoreCLI@2
+      displayName: Build
+      inputs:
+        arguments: '--configuration $(BuildConfiguration)'
+
+    - task: DotNetCoreCLI@2
+      displayName: Test
+      inputs:
+        command: test
+        arguments: '--configuration $(BuildConfiguration)'
+
+    - task: DotNetCoreCLI@2
+      displayName: Publish
+      inputs:
+        command: publish
+        publishWebProjects: True
+        arguments: '--configuration $(BuildConfiguration) --output $(build.artifactstagingdirectory)'
+        zipAfterPublish: True
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact'
+      inputs:
+        artifactName: 'drop'
+        pathtoPublish: '$(build.artifactstagingdirectory)'
